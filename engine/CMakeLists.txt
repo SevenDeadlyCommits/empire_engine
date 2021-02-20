@@ -3,7 +3,7 @@ project(empire)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(empire_engine src/empire.cpp src/empire.h src/window/window.cpp src/window/window.h src/errors/error_status.h src/renderer/renderer.cpp src/renderer/renderer.h src/component/component_interface.h src/renderer/vulkan_renderer.cpp src/renderer/vulkan_renderer.h src/renderer/shader_loader.cpp src/renderer/shader_loader.h)
+add_library(empire_engine src/empire.cpp src/empire.h src/window/window.cpp src/window/window.h src/errors/error_status.h src/component/component_interface.h src/renderer/vulkan_renderer.cpp src/renderer/vulkan_renderer.h src/renderer/shader_loader.cpp src/renderer/shader_loader.h)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -23,6 +23,8 @@ message("Found GLEW in ${GLEW_INCLUDE_DIR}")
 
 # Put all libraries into a variable
 set(LIBS glfw ${Vulkan_LIBRARIES} glm GLEW ${EMPIRE_LIBRARY})
+
+add_custom_target(compileShader COMMAND bash ./scripts/compile_shaders.sh )
 
 configure_file(res/shaders/default_vert.spv ${CMAKE_CURRENT_BINARY_DIR}/res/shaders/default_vert.spv COPYONLY)
 configure_file(res/shaders/default_frag.spv ${CMAKE_CURRENT_BINARY_DIR}/res/shaders/default_frag.spv COPYONLY)

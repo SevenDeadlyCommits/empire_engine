@@ -28,11 +28,6 @@ namespace empire {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-//    VkDynamicState dynamicStates[] = {
-//            VK_DYNAMIC_STATE_VIEWPORT,
-//            VK_DYNAMIC_STATE_LINE_WIDTH
-//    };
-
     class vulkan_renderer {
 
     public:
