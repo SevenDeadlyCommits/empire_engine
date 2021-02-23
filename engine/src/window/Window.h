@@ -13,12 +13,10 @@
 #include "../renderer/VulkanRenderer.h"
 
 namespace Empire {
-    enum class ERROR_STATUS;
-
     class Window {
     public:
         Window();
-        ERROR_STATUS initWindow();
+        void initWindow();
 
         void cleanup();
 
