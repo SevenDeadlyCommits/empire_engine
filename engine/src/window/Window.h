@@ -10,22 +10,19 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <GLFW/glfw3.h>
 #include <vector>
-#include "../renderer/VulkanRenderer.h"
 
 namespace Empire {
     class Window {
     public:
         Window();
-        void initWindow();
 
+        void initWindow();
         void cleanup();
 
         inline GLFWwindow* getGlfWindowHandle() {return glfWindow;}
-        inline VulkanRenderer* getVulkanRenderer() {return vulkanRenderer;}
 
     private:
         GLFWwindow* glfWindow;
-        VulkanRenderer* vulkanRenderer;
 
     };
 }

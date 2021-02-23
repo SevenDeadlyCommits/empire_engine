@@ -12,20 +12,25 @@ namespace Empire {
     }
 
     void Application::init() {
+        // Create application window
         window = std::make_unique<Window>();
         getWindow()->initWindow();
+        // Create our vulkan renderer
+        renderer = std::make_unique<VulkanRenderer>(getWindow()->getGlfWindowHandle());
+        getRenderer()->initVulkanRenderer();
     }
 
     void Application::run() {
         // Simple main application loop
         while(!glfwWindowShouldClose(getWindow()->getGlfWindowHandle())) {
             glfwPollEvents();
-            getWindow()->getVulkanRenderer()->drawFrame();
+            getRenderer()->drawFrame();
         }
 
     }
 
     void Application::cleanup() {
+        getRenderer()->cleanup();
         getWindow()->cleanup();
     }
 

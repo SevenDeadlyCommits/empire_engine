@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <window/Window.h>
+#include <renderer/VulkanRenderer.h>
 
 namespace Empire {
 
@@ -22,9 +23,11 @@ namespace Empire {
 
     protected:
         inline Window* getWindow() {return window.get();}
+        inline VulkanRenderer* getRenderer() {return renderer.get();}
 
     private:
         std::unique_ptr<Window> window;
+        std::unique_ptr<VulkanRenderer> renderer;
 
     };
 }

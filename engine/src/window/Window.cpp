@@ -3,19 +3,15 @@
 //
 
 #include "Window.h"
-#include "../errors/ErrorStatus.h"
-#include "../renderer/VulkanRenderer.h"
 
-#include <stdio.h>
 #include <stdexcept>
-
 
 namespace Empire {
 
 
-    Window::Window()
-    : vulkanRenderer(nullptr)
-    {}
+    Window::Window() {
+
+    }
 
     void Window::initWindow() {
         // Initialise GLFW
@@ -29,23 +25,16 @@ namespace Empire {
         // Open a Window and create its OpenGL context
         glfWindow = glfwCreateWindow(1024, 768, "Window", nullptr, nullptr);
         if (glfWindow == nullptr) {
-            throw std::runtime_error("\"Failed to open GLFW Window.");
             glfwTerminate();
+            throw std::runtime_error("\"Failed to open GLFW Window.");
         }
-
-        vulkanRenderer = new VulkanRenderer(glfWindow);
-        vulkanRenderer->initVulkanRenderer();
 
         glfwMakeContextCurrent(glfWindow); // Initialize GLEW
     }
 
     void Window::cleanup()
     {
-        vulkanRenderer->cleanup();
-        delete vulkanRenderer;
-
         glfwDestroyWindow(glfWindow);
-
         glfwTerminate();
     }
 }
