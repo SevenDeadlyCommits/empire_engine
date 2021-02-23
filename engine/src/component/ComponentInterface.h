@@ -7,8 +7,8 @@
 
 #endif //EMPIRE_COMPONENT_INTERFACE_H
 
-namespace empire {
-    virtual class component_interface
+namespace Empire {
+    virtual class ComponentInterface
     {
     public:
         virtual void initialise() = 0;

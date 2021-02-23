@@ -3,7 +3,7 @@ project(empire)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(empire_engine src/empire.cpp src/empire.h src/window/window.cpp src/window/window.h src/errors/error_status.h src/component/component_interface.h src/renderer/vulkan_renderer.cpp src/renderer/vulkan_renderer.h src/renderer/shader_loader.cpp src/renderer/shader_loader.h)
+add_library(empire_engine src/Empire.h src/window/Window.cpp src/window/Window.h src/errors/ErrorStatus.h src/component/ComponentInterface.h src/renderer/VulkanRenderer.cpp src/renderer/VulkanRenderer.h src/renderer/ShaderLoader.cpp src/renderer/ShaderLoader.h src/renderer/Vertex.h src/application/Application.cpp src/application/Application.h)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -30,7 +30,7 @@ configure_file(res/shaders/default_vert.spv ${CMAKE_CURRENT_BINARY_DIR}/res/shad
 configure_file(res/shaders/default_frag.spv ${CMAKE_CURRENT_BINARY_DIR}/res/shaders/default_frag.spv COPYONLY)
 
 # external includes
-target_include_directories(empire_engine PUBLIC ${glfw3_DIR} ${Vulkan_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS} ${GLEW_INCLUDE_DIR} )
+target_include_directories(empire_engine PUBLIC ${glfw3_DIR} ${Vulkan_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS} ${GLEW_INCLUDE_DIR} src)
 
 # link
 target_link_libraries(empire_engine ${LIBS})

@@ -7,10 +7,11 @@
 #include <set>
 #include <cstdint>
 
-#include "vulkan_renderer.h"
-#include "shader_loader.h"
+#include "VulkanRenderer.h"
+#include "ShaderLoader.h"
+#include "Vertex.h"
 
-namespace empire
+namespace Empire
 {
 
 #ifdef NDEBUG
@@ -40,12 +41,19 @@ namespace empire
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
-    vulkan_renderer::vulkan_renderer(GLFWwindow* glfWindow)
+    // temp to test renderer
+    const std::vector<Vertex> vertices = {
+            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+    VulkanRenderer::VulkanRenderer(GLFWwindow* glfWindow)
     : glfWindow(glfWindow) {
 
     }
 
-    void vulkan_renderer::initVulkanRenderer() {
+    void VulkanRenderer::initVulkanRenderer() {
         glfwSetWindowUserPointer(glfWindow, this);
         glfwSetFramebufferSizeCallback(glfWindow, framebufferResizeCallback);
         createVulkanInstance();
@@ -59,16 +67,17 @@ namespace empire
         createGraphicsPipeline();
         createFramebuffers();
         createCommandPool();
+        createVertexBuffer();
         createCommandBuffers();
         createSyncObjects();
     }
 
-    void vulkan_renderer::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<vulkan_renderer*>(glfwGetWindowUserPointer(window));
+    void VulkanRenderer::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        auto app = reinterpret_cast<VulkanRenderer*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
     }
 
-    void vulkan_renderer::recreateSwapChain() {
+    void VulkanRenderer::recreateSwapChain() {
         int width = 0, height = 0;
         glfwGetFramebufferSize(glfWindow, &width, &height);
         while (width == 0 || height == 0) {
@@ -87,7 +96,7 @@ namespace empire
         createCommandBuffers();
     }
 
-    void vulkan_renderer::cleanupSwapChain() {
+    void VulkanRenderer::cleanupSwapChain() {
         for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
             vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
         }
@@ -105,7 +114,7 @@ namespace empire
         vkDestroySwapchainKHR(device, swapChain, nullptr);
     }
 
-    void vulkan_renderer::drawFrame() {
+    void VulkanRenderer::drawFrame() {
         vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
@@ -172,7 +181,36 @@ namespace empire
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    void vulkan_renderer::createVulkanInstance() {
+    void VulkanRenderer::createVertexBuffer() {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create vertex buffer!");
+        }
+
+        vkGetBufferMemoryRequirements(device, vertexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate vertex buffer memory!");
+        }
+
+        vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+
+        vkMapMemory(device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+        memcpy(data, vertices.data(), (size_t) bufferInfo.size);
+        vkUnmapMemory(device, vertexBufferMemory);
+    }
+
+    void VulkanRenderer::createVulkanInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
         }
@@ -221,7 +259,7 @@ namespace empire
 
     }
 
-    void vulkan_renderer::createSwapChain() {
+    void VulkanRenderer::createSwapChain() {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -275,7 +313,7 @@ namespace empire
         swapChainExtent = extent;
     }
 
-    void vulkan_renderer::createImageViews() {
+    void VulkanRenderer::createImageViews() {
         swapChainImageViews.resize(swapChainImages.size());
 
         for (size_t i = 0; i < swapChainImages.size(); i++) {
@@ -301,7 +339,7 @@ namespace empire
 
     }
 
-    void vulkan_renderer::createRenderPass() {
+    void VulkanRenderer::createRenderPass() {
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = swapChainImageFormat;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -345,9 +383,9 @@ namespace empire
     }
 
 
-    void vulkan_renderer::createGraphicsPipeline() {
-        auto vertShaderCode = shader_loader::readFile("engine/res/shaders/default_vert.spv");
-        auto fragShaderCode = shader_loader::readFile("engine/res/shaders/default_frag.spv");
+    void VulkanRenderer::createGraphicsPipeline() {
+        auto vertShaderCode = ShaderLoader::readFile("engine/res/shaders/default_vert.spv");
+        auto fragShaderCode = ShaderLoader::readFile("engine/res/shaders/default_frag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -369,10 +407,14 @@ namespace empire
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -490,7 +532,7 @@ namespace empire
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
-    void vulkan_renderer::createFramebuffers() {
+    void VulkanRenderer::createFramebuffers() {
         swapChainFramebuffers.resize(swapChainImageViews.size());
         for (size_t i = 0; i < swapChainImageViews.size(); i++) {
             VkImageView attachments[] = {
@@ -512,7 +554,7 @@ namespace empire
         }
     }
 
-    void vulkan_renderer::createCommandBuffers() {
+    void VulkanRenderer::createCommandBuffers() {
         commandBuffers.resize(swapChainFramebuffers.size());
 
         VkCommandBufferAllocateInfo allocInfo{};
@@ -548,7 +590,11 @@ namespace empire
 
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            VkBuffer vertexBuffers[] = {vertexBuffer};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+            vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
             vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -558,7 +604,7 @@ namespace empire
         }
     }
 
-    void vulkan_renderer::createSyncObjects() {
+    void VulkanRenderer::createSyncObjects() {
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -581,7 +627,7 @@ namespace empire
         }
     }
 
-    void vulkan_renderer::createCommandPool() {
+    void VulkanRenderer::createCommandPool() {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
         VkCommandPoolCreateInfo poolInfo{};
@@ -594,7 +640,7 @@ namespace empire
         }
     }
 
-    VkShaderModule vulkan_renderer::createShaderModule(const std::vector<char>& code) {
+    VkShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();
@@ -607,7 +653,7 @@ namespace empire
         return shaderModule;
     }
 
-    bool vulkan_renderer::checkValidationLayerSupport() {
+    bool VulkanRenderer::checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -632,7 +678,7 @@ namespace empire
         return true;
     }
 
-    std::vector<const char*> vulkan_renderer::getRequiredExtensions() {
+    std::vector<const char*> VulkanRenderer::getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -646,7 +692,7 @@ namespace empire
         return extensions;
     }
 
-    void vulkan_renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    void VulkanRenderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -654,7 +700,7 @@ namespace empire
         createInfo.pfnUserCallback = debugCallback;
     }
 
-    void vulkan_renderer::setupDebugMessenger() {
+    void VulkanRenderer::setupDebugMessenger() {
         if (!enableValidationLayers)
             return;
 
@@ -667,10 +713,10 @@ namespace empire
 
     }
 
-    VkResult vulkan_renderer::CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                                  const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                                  const VkAllocationCallbacks* pAllocator,
-                                                  VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    VkResult VulkanRenderer::CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                                          const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                                          const VkAllocationCallbacks* pAllocator,
+                                                          VkDebugUtilsMessengerEXT* pDebugMessenger) {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr) {
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -679,16 +725,16 @@ namespace empire
         }
     }
 
-    void vulkan_renderer::DestroyDebugUtilsMessengerEXT(VkInstance instance,
-                                               VkDebugUtilsMessengerEXT debugMessenger,
-                                               const VkAllocationCallbacks* pAllocator) {
+    void VulkanRenderer::DestroyDebugUtilsMessengerEXT(VkInstance instance,
+                                                       VkDebugUtilsMessengerEXT debugMessenger,
+                                                       const VkAllocationCallbacks* pAllocator) {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {
             func(instance, debugMessenger, pAllocator);
         }
     }
 
-    void vulkan_renderer::pickPhysicalDevice() {
+    void VulkanRenderer::pickPhysicalDevice() {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -713,7 +759,7 @@ namespace empire
         }
     }
 
-    bool vulkan_renderer::isDeviceSuitable(VkPhysicalDevice device) {
+    bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
         bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -727,7 +773,7 @@ namespace empire
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    bool vulkan_renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool VulkanRenderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -743,7 +789,7 @@ namespace empire
         return requiredExtensions.empty();
     }
 
-    QueueFamilyIndices vulkan_renderer::findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
         QueueFamilyIndices indices;
 
         uint32_t queueFamilyCount = 0;
@@ -773,7 +819,7 @@ namespace empire
         return indices;
     }
 
-    void vulkan_renderer::createLogicalDevice() {
+    void VulkanRenderer::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
         VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -825,13 +871,13 @@ namespace empire
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     }
 
-    void vulkan_renderer::createSurface() {
+    void VulkanRenderer::createSurface() {
         if (glfwCreateWindowSurface(instance, glfWindow, nullptr, &surface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
+            throw std::runtime_error("failed to create Window surface!");
         }
     }
 
-    SwapChainSupportDetails vulkan_renderer::querySwapChainSupport(VkPhysicalDevice device) {
+    SwapChainSupportDetails VulkanRenderer::querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
 
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -855,7 +901,7 @@ namespace empire
         return details;
     }
 
-    VkSurfaceFormatKHR vulkan_renderer::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    VkSurfaceFormatKHR VulkanRenderer::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
         for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
@@ -865,7 +911,7 @@ namespace empire
         return availableFormats[0];
     }
 
-    VkPresentModeKHR vulkan_renderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR VulkanRenderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;
@@ -875,7 +921,7 @@ namespace empire
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D vulkan_renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    VkExtent2D VulkanRenderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         } else {
@@ -894,8 +940,24 @@ namespace empire
         }
     }
 
-    void vulkan_renderer::cleanup() {
+    uint32_t VulkanRenderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        throw std::runtime_error("failed to find suitable memory type!");
+    }
+
+    void VulkanRenderer::cleanup() {
         cleanupSwapChain();
+
+        vkDestroyBuffer(device, vertexBuffer, nullptr);
+        vkFreeMemory(device, vertexBufferMemory, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);

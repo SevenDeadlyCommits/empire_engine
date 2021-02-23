@@ -7,7 +7,7 @@
 
 #endif //EMPIRE_ERROR_STATUS_H
 
-namespace empire {
+namespace Empire {
     enum class ERROR_STATUS {
         NONE = 0,
         GENERIC_ERROR

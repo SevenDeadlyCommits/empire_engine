@@ -2,21 +2,21 @@
 // Created by octo on 16/02/2021.
 //
 
-#include "window.h"
-#include "../errors/error_status.h"
-#include "../renderer/vulkan_renderer.h"
+#include "Window.h"
+#include "../errors/ErrorStatus.h"
+#include "../renderer/VulkanRenderer.h"
 
 #include <stdio.h>
 
 
-namespace empire {
+namespace Empire {
 
 
-    window::window()
+    Window::Window()
     : vulkanRenderer(nullptr)
     {}
 
-    ERROR_STATUS window::initWindow() {
+    ERROR_STATUS Window::initWindow() {
         // Initialise GLFW
         if (!glfwInit()) {
             fprintf(stderr, "Failed to initialize GLFW\n");
@@ -25,16 +25,16 @@ namespace empire {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        // Open a window and create its OpenGL context
+        // Open a Window and create its OpenGL context
         glfWindow = glfwCreateWindow(1024, 768, "Window", nullptr, nullptr);
         if (glfWindow == nullptr) {
             fprintf(stderr,
-                    "Failed to open GLFW window.\n");
+                    "Failed to open GLFW Window.\n");
             glfwTerminate();
             return ERROR_STATUS::GENERIC_ERROR;
         }
 
-        vulkanRenderer = new vulkan_renderer(glfWindow);
+        vulkanRenderer = new VulkanRenderer(glfWindow);
         vulkanRenderer->initVulkanRenderer();
 
         glfwMakeContextCurrent(glfWindow); // Initialize GLEW
@@ -42,7 +42,7 @@ namespace empire {
         return ERROR_STATUS::NONE;
     }
 
-    void window::cleanup()
+    void Window::cleanup()
     {
         vulkanRenderer->cleanup();
         delete vulkanRenderer;

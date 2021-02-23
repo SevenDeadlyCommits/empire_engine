@@ -3,7 +3,7 @@ project(empire)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(empire_engine_test main.cpp)
+add_executable(empire_engine_test empire_sandbox.cpp)
 
 # add engine cmake lists
 add_subdirectory(engine)

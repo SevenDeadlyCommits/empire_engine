@@ -10,24 +10,24 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <GLFW/glfw3.h>
 #include <vector>
-#include "../renderer/vulkan_renderer.h"
+#include "../renderer/VulkanRenderer.h"
 
-namespace empire {
+namespace Empire {
     enum class ERROR_STATUS;
 
-    class window {
+    class Window {
     public:
-        window();
+        Window();
         ERROR_STATUS initWindow();
 
         void cleanup();
 
         inline GLFWwindow* getGlfWindowHandle() {return glfWindow;}
-        inline vulkan_renderer* getVulkanRenderer() {return vulkanRenderer;}
+        inline VulkanRenderer* getVulkanRenderer() {return vulkanRenderer;}
 
     private:
         GLFWwindow* glfWindow;
-        vulkan_renderer* vulkanRenderer;
+        VulkanRenderer* vulkanRenderer;
 
     };
 }

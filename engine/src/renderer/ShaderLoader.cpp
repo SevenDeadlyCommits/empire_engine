@@ -2,14 +2,14 @@
 // Created by octo on 20/02/2021.
 //
 
-#include "shader_loader.h"
+#include "ShaderLoader.h"
 
 #include <fstream>
 #include <iostream>
 #include <filesystem>
 
-namespace empire {
-    std::vector<char> shader_loader::readFile(const std::string& filename) {
+namespace Empire {
+    std::vector<char> ShaderLoader::readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
         if (!file.is_open()) {

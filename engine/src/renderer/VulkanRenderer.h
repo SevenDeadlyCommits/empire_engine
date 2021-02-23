@@ -2,8 +2,8 @@
 // Created by octo on 18/02/2021.
 //
 
-#ifndef EMPIRE_VULKAN_RENDERER_H
-#define EMPIRE_VULKAN_RENDERER_H
+#ifndef EMPIRE_VULKANRENDERER_H
+#define EMPIRE_VULKANRENDERER_H
 
 #define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
@@ -12,7 +12,7 @@
 #include <vector>
 #include <optional>
 
-namespace empire {
+namespace Empire {
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
@@ -28,10 +28,10 @@ namespace empire {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    class vulkan_renderer {
+    class VulkanRenderer {
 
     public:
-        vulkan_renderer(GLFWwindow* glfWindow);
+        VulkanRenderer(GLFWwindow* glfWindow);
 
         void initVulkanRenderer();
         void drawFrame();
@@ -73,6 +73,8 @@ namespace empire {
         void createSyncObjects();
         void recreateSwapChain();
         void cleanupSwapChain();
+        void createVertexBuffer();
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     private:
         VkInstance instance;
@@ -94,15 +96,19 @@ namespace empire {
         VkRenderPass renderPass;
         VkPipeline graphicsPipeline;
         VkCommandPool commandPool;
+        VkBuffer vertexBuffer;
+        VkMemoryRequirements memRequirements;
+        VkDeviceMemory vertexBufferMemory;
         std::vector<VkSemaphore> imageAvailableSemaphores;
         std::vector<VkSemaphore> renderFinishedSemaphores;
         std::vector<VkFence> inFlightFences;
         std::vector<VkFence> imagesInFlight;
         size_t currentFrame = 0;
         bool framebufferResized = false;
+        void* data;
 
     };
 }
 
 
-#endif //EMPIRE_VULKAN_RENDERER_H
+#endif //EMPIRE_VULKANRENDERER_H
