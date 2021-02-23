@@ -3,7 +3,7 @@ project(empire)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(empire_engine src/Empire.h src/window/Window.cpp src/window/Window.h src/errors/ErrorStatus.h src/component/ComponentInterface.h src/renderer/VulkanRenderer.cpp src/renderer/VulkanRenderer.h src/renderer/ShaderLoader.cpp src/renderer/ShaderLoader.h src/renderer/Vertex.h src/application/Application.cpp src/application/Application.h)
+add_library(empire_engine src/Empire.h src/window/Window.cpp src/window/Window.h src/errors/ErrorStatus.h src/component/ComponentInterface.h src/renderer/VulkanRenderer.cpp src/renderer/VulkanRenderer.h src/renderer/ShaderLoader.cpp src/renderer/ShaderLoader.h src/renderer/Vertex.h src/application/Application.cpp src/application/Application.h src/log/Logger.cpp src/log/Logger.h src/log/LogLevel.h)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
