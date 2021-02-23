@@ -17,7 +17,6 @@ namespace Empire {
         const std::string toString() const;
 
         EVENT_CLASS_TYPE(KeyReleased)
-
     };
 }
 

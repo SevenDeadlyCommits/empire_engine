@@ -9,10 +9,16 @@
 namespace Empire {
 
 
+    /**
+     *
+     */
     Window::Window() {
 
     }
 
+    /**
+     *
+     */
     void Window::initWindow() {
         // Initialise GLFW
         if (!glfwInit()) {
@@ -32,6 +38,17 @@ namespace Empire {
         glfwMakeContextCurrent(glfWindow); // Initialize GLEW
     }
 
+    /**
+     *
+     * @param eventCallback
+     */
+    void Window::setEventCallback(const EventCallback &eventCallback) {
+        this->eventCallback = eventCallback;
+    }
+
+    /**
+     *
+     */
     void Window::cleanup()
     {
         glfwDestroyWindow(glfWindow);

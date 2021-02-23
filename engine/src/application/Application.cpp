@@ -3,6 +3,7 @@
 //
 
 #include "Application.h"
+#include <Empire.h>
 #include <window/Window.h>
 
 namespace Empire {
@@ -14,6 +15,7 @@ namespace Empire {
     void Application::init() {
         // Create application window
         window = std::make_unique<Window>();
+        getWindow()->setEventCallback(EMPIRE_BIND_EVENT_FN(Application::OnEvent));
         getWindow()->initWindow();
         // Create our vulkan renderer
         renderer = std::make_unique<VulkanRenderer>(getWindow()->getGlfWindowHandle());
@@ -26,6 +28,10 @@ namespace Empire {
             glfwPollEvents();
             getRenderer()->drawFrame();
         }
+
+    }
+
+    void Application::OnEvent(Event& event) {
 
     }
 

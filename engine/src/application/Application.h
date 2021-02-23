@@ -16,9 +16,8 @@ namespace Empire {
         Application();
 
         void init();
-
         void run();
-
+        void OnEvent(Event& event);
         void cleanup();
 
     protected:

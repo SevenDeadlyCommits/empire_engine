@@ -10,19 +10,26 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <functional>
+
+#include <event/Event.h>
 
 namespace Empire {
     class Window {
     public:
+
+        using EventCallback = std::function<void(Event&)>;
         Window();
 
         void initWindow();
+        void setEventCallback(const EventCallback& eventCallback);
         void cleanup();
 
         inline GLFWwindow* getGlfWindowHandle() {return glfWindow;}
 
     private:
         GLFWwindow* glfWindow;
+        EventCallback eventCallback;
 
     };
 }
