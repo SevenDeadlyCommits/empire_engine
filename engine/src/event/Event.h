@@ -41,7 +41,7 @@ namespace Empire {
 
         inline bool inCategory(EventCategory category) { return getCategoryFlags() & category;}
 
-    protected:
+    public:
         bool handled = false;
     };
 }
