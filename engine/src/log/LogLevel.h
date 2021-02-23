@@ -5,7 +5,7 @@
 #ifndef EMPIRE_LOGLEVEL_H
 #define EMPIRE_LOGLEVEL_H
 
-namespace empire {
+namespace Empire {
 
     enum class LogLevel {
         Quiet,

@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-namespace empire {
+namespace Empire {
 
     /**
      * Super simple logging to console for now.

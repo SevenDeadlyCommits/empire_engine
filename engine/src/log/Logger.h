@@ -7,7 +7,7 @@
 
 #include <log/LogLevel.h>
 
-namespace empire {
+namespace Empire {
     class Logger {
     public:
         static void LogMessage(const LogLevel level, const LogType type, const char* message);

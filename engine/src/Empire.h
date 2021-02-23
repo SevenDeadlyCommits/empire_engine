@@ -6,6 +6,6 @@
 #define EMPIRE_EMPIRE_H
 
 // Common engine includes, possibly some macro defs here
-
+#define Bit(x) (1 << x)
 
 #endif //EMPIRE_EMPIRE_H
