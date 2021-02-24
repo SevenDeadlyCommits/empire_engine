@@ -13,6 +13,7 @@
 #include <functional>
 
 #include <event/Event.h>
+#include "WindowData.h"
 
 namespace Empire {
     class Window {
@@ -29,7 +30,7 @@ namespace Empire {
 
     private:
         GLFWwindow* glfWindow;
-        EventCallback eventCallback;
+        WindowData windowData;
 
     };
 }

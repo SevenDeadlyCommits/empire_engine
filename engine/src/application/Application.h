@@ -17,14 +17,16 @@ namespace Empire {
 
         void init();
         void run();
-        void OnEvent(Event& event);
+        void onEvent(Event& event);
         void cleanup();
 
     protected:
+        bool onWindowResized(class WindowResizeEvent& event);
         inline Window* getWindow() {return window.get();}
         inline VulkanRenderer* getRenderer() {return renderer.get();}
 
     private:
+        bool minimized;
         std::unique_ptr<Window> window;
         std::unique_ptr<VulkanRenderer> renderer;
 
