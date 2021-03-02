@@ -8,6 +8,7 @@ A Game engine geared towards RTS games, in very early development.
 - GLM
 - C++ 17
 - Cmake
+- glslc
 
 ## Features - All WIP for now, but in an ideal world we will eventually have them all.
 
