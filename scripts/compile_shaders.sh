@@ -1,6 +1,9 @@
 #!/bin/bash
 
+
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+mkdir -p "$SCRIPT_DIR"/../engine/res/shaders/
+
 readarray -d '' array < <(find "$SCRIPT_DIR"/../engine/src/shaders -name '*.vert' -print0)
 
 for i in "${array[@]}"
